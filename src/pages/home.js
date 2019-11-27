@@ -1,11 +1,14 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import Axios from 'axios';
-import { Card, Button, CardTitle, CardText, Row, Col, Table, Form, FormGroup, Label, Input, FormText  } from 'reactstrap';
+import { Card, Button, CardTitle, CardText, Row, Col, Table, Form, FormGroup, Label, Input, FormText, DropdownItem  } from 'reactstrap';
+import Kartu from '../component/card'
+import Derop from '../component/dropConst';
 
 class home extends Component{
     state={
-        data:[]
+        data:[],
+        selectedId:null
     }
 
     componentDidMount(){
@@ -20,69 +23,95 @@ class home extends Component{
         })
     }
 
-    contoh=()=>{
-        // Axios.get('http://localhost:2000/users')
-        // .then((res)=>{
-        //     // console.log(res.data)
-        //     this.setState({data:res.data})
-        //     // console.log(this.state.data[2].first_name)
-        // })
-        // .catch((err)=>{
-        //     console.log(err)
-        // })
+    renderDrop = () => {
+        return this.state.data.map( (val) => {
+            return (
+            <DropdownItem>{val.first_name}</DropdownItem>
+            );
+        })
     }
 
+    renderKartu=()=>{
+        return this.state.data.map((val) => {
+            return(
+                <Kartu 
+                contoh={val.first_name} 
+                contoh2={val.last_name} 
+                contoh3={val.email}/>
+            )
+        })
+    }
     renderUserData=()=>{
         return this.state.data.map((val,nomor)=>{
-            return(
-                // <div>
-                //     <h1>{val.first_name}</h1>
-                //     <h2>{val.last_name}</h2>
-                //     <p>{val.email}</p>
-                // </div>
-            //     <Row>
-            //     <Col sm="2" className="text-center">
-            //       <Card body>
-            //         <CardTitle >{val.first_name} {val.last_name}</CardTitle>
-            //         <CardText>email : {val.email}</CardText>
-            //         <Button>Go somewhere</Button>
-            //       </Card>
-            //     </Col>
-            //   </Row>
-              
-                <tr>
-                  <th scope="row">{nomor+1}</th>
-                  <td>{val.first_name}</td>
-                  <td>{val.last_name}</td>
-                  <td>{val.email}</td>
-                  <td><Button color='danger '  onClick={()=>{this.removeData(val.id)}}>DELETE</Button></td>
-                  <td><Button color='warning'  onClick={()=>{this.editData(val.id)}}>EDIT</Button></td>
-                  {/* panggil render input text, lalu ambil valuenya */}
-                </tr>
-            )
+            if(this.state.selectedId===val.id){
+                return(
+                    <tr key={val.id}>
+                        <th scope="row">{nomor+1}</th>                        
+                        {/* cara input text react*/}
+                        <td><Input type="text" className="form-control" innerRef={(firstnameBaru)=>this.firstnameBaru=firstnameBaru} placeholder={val.first_name} /></td>
+                        {/* cara input text html*/}
+                        <td><input type="text" className="form-control" ref="lastnameBaru" placeholder={val.last_name} /></td>
+                        <td><input type="email" className="form-control" ref="emailBaru" placeholder={val.email} /></td>
+                        <center>
+                        <td>
+                            <td><Button color='primary ' className='shadow' onClick={()=>{this.submitDataBaru(val.id)}}>Ok</Button></td>
+                            <td><Button color='danger '  className='shadow' onClick={() => this.setState({selectedId: null})}>cancel</Button></td>
+                        </td>
+                        </center>
+                        {/* <td><Button color='warning'  onClick={()=>{this.editData(val.id)}}>EDIT</Button></td> */}
+                        {/* panggil render input text, lalu ambil valuenya */}
+                    </tr>
+                )
+            }else{
+                return(
+                    <tr key={val.id}>
+                        <th scope="row" >{nomor+1}</th>
+                        <td>{val.first_name}</td>
+                        <td>{val.last_name}</td>
+                        <td>{val.email}</td>
+                        <center>
+                        <td>
+                            <td><Button color='danger ' className='shadow'  onClick={()=>{this.removeData(val.id)}}>DELETE</Button></td>
+                            <td><Button color='warning' className='shadow'  onClick={()=>{this.editData(val.id)}}>EDIT</Button></td>
+                        </td>
+                        </center>
+                    </tr>
+                )
+            }
         })
     }
     coba=(a)=>{ //triall
         console.log('asd'+a)
     }
-   removeData=(a)=>{ //finish
+
+    removeData=(a)=>{ //finish
        var url= `http://localhost:2000/users/`
        var pjg = a
        Axios.delete(url+pjg)
        .then((res)=>{
-           this.componentDidMount()
+           this.cetak()
        })
     console.log(pjg)
-   }
-   editData=(a)=>{ //triall
-       var url= `http://localhost:2000/users/`
-       var pjg = a
-       Axios.put(url+pjg)
-       .then((res)=>{
-           this.componentDidMount()
-       })
-    console.log(pjg)
-   }
+    }
+
+    editData=(z)=>{
+        this.setState({selectedId:z})
+        console.log(this.state.selectedId)
+    
+    }
+
+    cetak=()=>{
+        Axios.get('http://localhost:2000/users')
+        .then((res)=>{
+            // console.log(res.data)
+            this.setState({data:res.data})
+            console.log(this.state.data)
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+    }
+
     submitData=()=>{
         var namaDepan = this.refs.firstname.value
         var namaBlkg = this.refs.lastname.value
@@ -90,6 +119,7 @@ class home extends Component{
         console.log(namaDepan)
         console.log(namaBlkg)
         console.log(email)
+
         Axios.post('http://localhost:2000/users',{
             first_name : namaDepan,
             last_name : namaBlkg,
@@ -97,7 +127,7 @@ class home extends Component{
         })
         .then((res)=>{
             console.log(res.data)
-            this.componentDidMount()
+            this.cetak()
             this.refs.firstname.value = ''
             this.refs.lastname.value = ''
             this.refs.email.value = ''
@@ -106,48 +136,82 @@ class home extends Component{
             console.log(err)
         })
     }
+    submitDataBaru=(a)=>{
+        var namaDepan = this.firstnameBaru.value
+        var namaBlkg = this.refs.lastnameBaru.value
+        var emailnya = this.refs.emailBaru.value
+        if(namaDepan===''){
+            namaDepan=this.state.data[a-1].first_name
+        }
+        if(namaBlkg===''){
+            namaBlkg=this.state.data[a-1].last_name
+        }
+        if(emailnya===''){
+            emailnya=this.state.data[a-1].email
+        }
+        Axios.put(`http://localhost:2000/users/${a}`,{
+            first_name : namaDepan,
+            last_name : namaBlkg,
+            email : emailnya
+        })
+        .then((res)=>{
+            console.log(res.data)
+            this.cetak()
+            this.setState({selectedId:null})
+            // this.refs.firstname.value = ''
+            // this.refs.lastname.value = ''
+            // this.refs.email.value = ''
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+    }
+    cancelsubmitDataBaru=()=>{
+        return(
+            this.setState({selectedId: null})
+        )
+    }
 
     render(){
         return(
-            <div className="m-auto ">
+            <div className="">
                 <h1 className="text-center">Ini Home</h1>
-                <Link to='/bukan'>
                     <center>
+                <Link to='/bukan'>
                         <button className="m-auto btn btn-success shadow">pindah ke Not Home</button>
-                    </center>
                 </Link>
-                    <button onClick={this.contoh}>Klik Saya</button>
-                <Table striped  className='container col-4 text-center'>
+                
+                <Derop isi={this.renderDrop()}/>
+
+                    </center>
+                <Table bordered className='container text-center'>
                     <thead>
                         <tr>
-                        <th >#</th>
+                        <th>#</th>
                         <th>First Name</th>
                         <th>Last Name</th>
                         <th>Email</th>
+                        <th>Tombol</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className='align-auto'>
                     {this.renderUserData()} 
                     </tbody>
-                </Table>   
-                    <Form>
-                {/* <FormGroup>
-                  <Label for="first-name">First Name</Label>
-                  <Input type="text" name="first-name" ref="firstname" placeholder="First Name" />
-                  </FormGroup>
-                  <FormGroup>
-                  <Label for="last-name">Last Name</Label>
-                  <Input type="text" name="last-name" ref="lastname" placeholder="Last Name" />
-                  </FormGroup>
-                  <FormGroup>
-                  <Label for="email">Email</Label>
-                  <Input type="email" name="email" ref="email" placeholder="email@email.email" />
-                </FormGroup> */}
-                <input type="text" ClassName="form-control" ref="firstname" placeholder="First Name" />
-                <input type="text" ClassName="form-control" ref="lastname" placeholder="Last Name" />
-                <input type="email" ClassName="form-control" ref="email" placeholder="Email" />
-                <Button color='success'  onClick={this.submitData}>Submit</Button>
-              </Form>
+                    <tfoot>
+                    {/* <Form className='container col-6 row m-auto'> */}
+                        <td>#</td>
+                        <td><input type="text" className="form-control"  ref="firstname" placeholder="First Name" /></td>
+                        <td><input type="text" className="form-control" ref="lastname" placeholder="Last Name" /></td>
+                        <td><input type="email" className="form-control" ref="email" placeholder="Email" /></td>
+                        <td><Button color='success' className='btn' onClick={this.submitData}>Submit</Button></td>
+                    {/* </Form> */}
+                    </tfoot>
+                </Table >   
+                <center>
+                    <Row className='mb-2'>
+                        {this.renderKartu()}
+                    </Row>
+                </center>
             </div>
         )
     }
