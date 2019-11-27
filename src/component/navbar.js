@@ -19,7 +19,7 @@ const Example = (props) => {
   const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <div class="m-auto shadow mb-5 info" >
+    <div>
       <Navbar color="info" light expand="md">
         <NavbarBrand><img src="logo.png" alt='logogo' width='50'></img><strong>HOME</strong>tapi<strong>BUKAN</strong></NavbarBrand>
         <NavbarToggler onClick={toggle} />
